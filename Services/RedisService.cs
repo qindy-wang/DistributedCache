@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace DistributedCache.Services
 {
-    public class SqlServerService: IDistributedService
+    public class RedisService : IDistributedService
     {
         private readonly IDistributedCache _cacheService;
 
-        public SqlServerService(IDistributedCache cacheService)
+        public RedisService(IDistributedCache cacheService)
         {
             this._cacheService = cacheService;
         }
@@ -21,7 +21,7 @@ namespace DistributedCache.Services
             T obj = default(T);
             var value = await _cacheService.GetStringAsync(key);
             if (string.IsNullOrEmpty(value))
-            {
+            { 
                 return default(T);
             }
             try
@@ -35,10 +35,24 @@ namespace DistributedCache.Services
             return obj;
         }
 
-        public async Task SetAsync(string key, byte[] value, object expiration = null, bool isAbsoluteExpiration = false)
+        public async Task<byte[]> GetAsync(string key)
         {
-            var options = this.BuildDistributedCacheEntryOptions(expiration, isAbsoluteExpiration);
-            await _cacheService.SetAsync(key, value, options);
+            return await _cacheService.GetAsync(key);
+        }
+
+        public async Task<string> GetStringAsync(string key)
+        {
+            return await _cacheService.GetStringAsync(key);
+        }
+
+        public async Task RefreshAsync(string key)
+        {
+            await _cacheService.RefreshAsync(key);
+        }
+
+        public async Task RemoveAsync(string key)
+        {
+            await _cacheService.RemoveAsync(key);
         }
 
         public async Task SetAsync(string key, object value, object expiration = null, bool isAbsoluteExpiration = false)
@@ -56,24 +70,10 @@ namespace DistributedCache.Services
             }
         }
 
-        public async Task<byte[]> GetAsync(string key)
+        public async Task SetAsync(string key, byte[] value, object expiration = null, bool isAbsoluteExpiration = false)
         {
-            return await _cacheService.GetAsync(key);
-        }
-
-        public async Task<string> GetStringAsync(string key)
-        {
-            return await _cacheService.GetStringAsync(key);
-        }
-
-        public async Task RemoveAsync(string key)
-        {
-            await _cacheService.RemoveAsync(key);
-        }
-
-        public async Task RefreshAsync(string key)
-        {
-            await _cacheService.RefreshAsync(key);
+            var options = this.BuildDistributedCacheEntryOptions(expiration, isAbsoluteExpiration);
+            await _cacheService.SetAsync(key, value, options);
         }
 
         private DistributedCacheEntryOptions BuildDistributedCacheEntryOptions(object expiration = null, bool isAbsoluteExpiration = false)

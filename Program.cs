@@ -14,11 +14,11 @@ namespace DistributedCache
             services.ConfigureServices();
 
             var serviceProvider = services.BuildServiceProvider();
-            var cacheService = serviceProvider.GetService<ISqlServerService>();
+            var cacheService = (RedisService)serviceProvider.GetService(typeof(RedisService));
 
-            var value01 = cacheService.GetStringAsync("key01").GetAwaiter().GetResult();
             cacheService.SetAsync("key01", "value01").GetAwaiter().GetResult();
-            value01 = cacheService.GetStringAsync("key01").GetAwaiter().GetResult();
+            var cacheValue = cacheService.GetStringAsync("key01").GetAwaiter().GetResult();
+    
             Console.ReadKey();
         }
     }
